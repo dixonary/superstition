@@ -7,11 +7,13 @@ import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.util.FlxMath;
 import flixel.group.FlxTypedGroup;
+import flixel.group.FlxGroup;
 
-class PlayState extends FlxState {
+class PuzzleState extends FlxState {
 
 	var player   :Player;
 	var bg 	     :Background;
+	var bgLayer  :FlxGroup;
 
 	public var platforms:FlxTypedGroup<Platform>; 
 	public var boxes    :FlxTypedGroup<Box>;
@@ -19,17 +21,17 @@ class PlayState extends FlxState {
 	override public function create():Void {
 		super.create();
 
-		add(bg = new Background("assets/images/bg1.png"));
-
-		add(player = new Player());
+		bgLayer = new FlxGroup();
+		add(bgLayer);
 
 		platforms = new FlxTypedGroup();
 		add(platforms);
-		platforms.add(new Platform(0, FlxG.height-50, FlxG.width, 50));
 
 		boxes = new FlxTypedGroup();
 		add(boxes);
-		boxes.add(new Box(100,20));
+
+		add(player = new Player());
+
 	}
 	
 	override public function destroy():Void {

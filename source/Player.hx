@@ -28,6 +28,9 @@ class Player extends FlxTypedGroup<FlxObject> {
         body.animation.add("idle", [8], 1, true);
         body.animation.play("idle");
 
+        body.pixelPerfectRender = false;
+        body.antialiasing = true;
+
         body.width -= 14;
         body.offset.x += 7;
 
@@ -58,7 +61,7 @@ class Player extends FlxTypedGroup<FlxObject> {
         else {
             body.animation.play("idle", true);
             arm_swing_count = 0;
-            arm.visible = false;
+            arm.visible = boxAttach;
         }
 
         //Gravity
@@ -74,7 +77,7 @@ class Player extends FlxTypedGroup<FlxObject> {
         else 
             body.acceleration.x = 0;
 
-        var state = cast(FlxG.state, PlayState);
+        var state = cast(FlxG.state, PuzzleState);
 
         //Jump
         if(body.overlapsAt(body.x, body.y+2, state.platforms)
@@ -101,6 +104,8 @@ class Player extends FlxTypedGroup<FlxObject> {
                 body.animation.play("rightstay", true);
         }
 
+        var touchingGround = body.overlapsAt(body.x,body.y+2,state.platforms)
+                          || body.overlapsAt(body.x, body.y+2, state.boxes);
         //Attach Box
         for(b in state.boxes) {
             //Box to the side
@@ -115,7 +120,7 @@ class Player extends FlxTypedGroup<FlxObject> {
                     body.velocity.x = Math.max(0,body.velocity.x);
                     body.acceleration.x = Math.max(0,body.acceleration.x);
                 }
-                if(FlxG.keys.justPressed.SPACE) {
+                if(FlxG.keys.justPressed.SPACE && touchingGround) {
                     boxAttach = true;
                     attachedBox = b;
                 }
@@ -126,7 +131,7 @@ class Player extends FlxTypedGroup<FlxObject> {
                     body.velocity.x = Math.min(0,body.velocity.x);
                     body.acceleration.x = Math.min(0,body.acceleration.x);
                 }
-                if(FlxG.keys.justPressed.SPACE) {
+                if(FlxG.keys.justPressed.SPACE && touchingGround) {
                     boxAttach = true;
                     attachedBox = b;
                 }
@@ -151,5 +156,10 @@ class Player extends FlxTypedGroup<FlxObject> {
         arm.x = body.x + 22 + arm_offset;
         arm.y = body.y + 65;
 
+    }
+
+    public function setPos(X,Y) {
+        body.x = X;
+        body.y = Y;
     }
 }
