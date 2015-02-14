@@ -5,20 +5,28 @@ import flixel.FlxG;
 
 class Player extends FlxSprite {
 
+    var boxAttach:Bool = false;
+    var attachedBox:Box;
+    var maxVelX = 300;
+    var boxSpeedFactor = 0.5;
+
     public function new() {
 
         super();
 
-        makeGraphic(69, 114, 0xff000000);
+        loadGraphic("assets/images/player_idle.png");
 
-        this.drag.x = 2000;
-        this.acceleration.y = 3000;
-        this.maxVelocity.x = 300;
-        this.maxVelocity.y = 5000;
+        drag.x = 2000;
+        acceleration.y = 3000;
+        maxVelocity.y  = 5000;
 
     }
 
     override public function update():Void {
+
+        maxVelocity.x = maxVelX * (boxAttach ? boxSpeedFactor : 1);
+
+        //Move left, right
         if(FlxG.keys.pressed.LEFT) 
             acceleration.x = -2000;
         else if(FlxG.keys.pressed.RIGHT) 
@@ -28,16 +36,40 @@ class Player extends FlxSprite {
 
         var state = cast(FlxG.state, PlayState);
 
+        //Jump
         if(this.overlapsAt(x, y+1, state.platforms)) {
-            makeGraphic(cast width, cast height, 0xff00ff00);
-            //Jump
-            if(FlxG.keys.justPressed.UP) 
+            if(FlxG.keys.justPressed.UP && !boxAttach) 
                 velocity.y = -1000;
         }
-        else {
-            makeGraphic(cast width, cast height, 0xffff0000);
+
+        //Move box
+        if(boxAttach)
+            attachedBox.velocity.x = velocity.x;
+
+        //Attach Box
+        if(FlxG.keys.justPressed.SPACE) {
+            for(b in state.boxes) {
+                //Box to the left
+                if(this.overlapsAt(x-20,y,b)) {
+                    boxAttach = true;
+                    attachedBox = b;
+                }
+                //Box to the right
+                else if(this.overlapsAt(x+20, y, b)) {
+                    boxAttach = true;
+                    attachedBox = b;
+                }
+
+            }
         }
 
+        //Detach Box
+        if(FlxG.keys.justReleased.SPACE && boxAttach) {
+            boxAttach = false;
+            attachedBox.velocity.x = 0;
+            attachedBox = null;
+
+        }
         super.update();
 
     }
