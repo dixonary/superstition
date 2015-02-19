@@ -8,6 +8,15 @@ import flixel.util.FlxSave;
  * free to simply ignore it or change it in any way you like.
  */
 class Reg {
+
+
+	public static var playerSpawnX:Int = 1050;
+	public static var playerSpawnY:Int = 200;
+
+	// public static var playerSpawnX:Int = 0;
+	// public static var playerSpawnY:Int = 430;
+	public static var toFin = false;
+
 	/**
 	 * Generic levels Array that can be used for cross-state stuff.
 	 * Example usage: Storing the levels of a platformer.

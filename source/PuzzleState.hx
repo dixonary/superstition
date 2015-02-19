@@ -11,9 +11,9 @@ import flixel.group.FlxGroup;
 
 class PuzzleState extends FlxState {
 
-	var player   :Player;
-	var bg 	     :Background;
-	var bgLayer  :FlxGroup;
+	public var player:Player;
+	var bg 	   :Background;
+	var bgLayer:FlxGroup;
 
 	public var platforms:FlxTypedGroup<Platform>; 
 	public var boxes    :FlxTypedGroup<Box>;
@@ -31,6 +31,7 @@ class PuzzleState extends FlxState {
 		add(boxes);
 
 		add(player = new Player());
+		player.setPos(Reg.playerSpawnX, Reg.playerSpawnY);
 
 	}
 	

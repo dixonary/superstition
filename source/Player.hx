@@ -3,19 +3,20 @@ package;
 import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.FlxObject;
-import flixel.group.FlxTypedGroup;
+import flixel.group.FlxSpriteGroup;
 
-class Player extends FlxTypedGroup<FlxObject> {
+class Player extends FlxSpriteGroup {
 
     var boxAttach:Bool = false;
     var attachedBox:Box;
     var maxVelX = 300;
     var boxSpeedFactor = 0.5;
 
-    var body:FlxSprite;
+    public var body:FlxSprite;
     var arm:FlxSprite;
     var arm_offset:Float = 0;
     var arm_swing_count:Int = 0;
+    public var inControl:Bool = true;
 
     public function new() {
 
@@ -26,6 +27,8 @@ class Player extends FlxTypedGroup<FlxObject> {
         body.animation.add("rightwalk", [for (i in 0 ... 8) i], 18, true);
         body.animation.add("rightstay", [0], 1, true);
         body.animation.add("idle", [8], 1, true);
+        body.animation.add("half", [9], 1, true);
+        body.animation.add("ded", [10], 1, true);
         body.animation.play("idle");
 
         body.pixelPerfectRender = false;
@@ -59,6 +62,7 @@ class Player extends FlxTypedGroup<FlxObject> {
             body.animation.play("rightwalk");
         }
         else {
+            if(inControl)
             body.animation.play("idle", true);
             arm_swing_count = 0;
             arm.visible = boxAttach;
@@ -69,11 +73,15 @@ class Player extends FlxTypedGroup<FlxObject> {
 
         body.maxVelocity.x = maxVelX * (boxAttach ? boxSpeedFactor : 1);
 
-        //Move left, right
-        if(FlxG.keys.pressed.LEFT) 
-            body.acceleration.x = -2000;
-        else if(FlxG.keys.pressed.RIGHT) 
-            body.acceleration.x = 2000;
+        if(inControl) {
+            //Move left, right
+            if(FlxG.keys.pressed.LEFT) 
+                body.acceleration.x = -2000;
+            else if(FlxG.keys.pressed.RIGHT) 
+                body.acceleration.x = 2000;
+            else 
+                body.acceleration.x = 0;
+        }
         else 
             body.acceleration.x = 0;
 
@@ -82,7 +90,7 @@ class Player extends FlxTypedGroup<FlxObject> {
         //Jump
         if(body.overlapsAt(body.x, body.y+2, state.platforms)
             || body.overlapsAt(body.x, body.y+2, state.boxes)) {
-            if(FlxG.keys.justPressed.UP && !boxAttach) {
+            if(FlxG.keys.justPressed.UP && !boxAttach && inControl) {
                 body.velocity.y = -1000;
                 body.y -= 1;
                 trace("BOING");
@@ -90,7 +98,8 @@ class Player extends FlxTypedGroup<FlxObject> {
         }
 
         //Detach Box
-        if(FlxG.keys.justReleased.SPACE && boxAttach) {
+        if(boxAttach && (FlxG.keys.justReleased.SPACE
+            || Math.abs(attachedBox.y-body.y) > 70)) {
             boxAttach = false;
             attachedBox.velocity.x = 0;
             attachedBox = null;
@@ -109,12 +118,12 @@ class Player extends FlxTypedGroup<FlxObject> {
         //Attach Box
         for(b in state.boxes) {
             //Box to the side
-            if(body.overlapsAt(body.x,body.y+2,b)) {
+            if(body.overlapsAt(body.x,body.y+4,b)) {
                 body.y -= 0.01;
                 body.velocity.y = Math.min(0,body.velocity.y);
                 body.acceleration.y = Math.min(0,body.acceleration.y);
             }
-            if(body.overlapsAt(body.x-2,body.y-2,b)) {
+            if(body.overlapsAt(body.x-4,body.y-4,b)) {
                 body.x = b.x + b.width;
                 if(!boxAttach) {
                     body.velocity.x = Math.max(0,body.velocity.x);
@@ -125,7 +134,7 @@ class Player extends FlxTypedGroup<FlxObject> {
                     attachedBox = b;
                 }
             }
-            if(body.overlapsAt(body.x+2,body.y-2,b)) {
+            if(body.overlapsAt(body.x+4,body.y-4,b)) {
                 body.x = b.x - body.width;
                 if(!boxAttach) {
                     body.velocity.x = Math.min(0,body.velocity.x);
@@ -151,10 +160,10 @@ class Player extends FlxTypedGroup<FlxObject> {
             arm_swing_count++;
             arm.angle += Math.sin(Math.round(arm_swing_count/8)*1.2) * 20; 
         }
-        arm_offset = !boxAttach ? (body.flipX ? 2 : -2) : (body.flipX ? -25 : 15);
+        arm_offset = !boxAttach ? (body.flipX ? 2 : -2) : (body.flipX ? -25*body.scale.x : 15*body.scale.x);
         arm.flipX = body.flipX;
-        arm.x = body.x + 22 + arm_offset;
-        arm.y = body.y + 65;
+        arm.x = body.x + 22*body.scale.x + arm_offset;
+        arm.y = body.y + 65*body.scale.x;
 
     }
 
